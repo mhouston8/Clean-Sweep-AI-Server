@@ -3,4 +3,6 @@ node_modules/
 *.log
 .DS_Store
 *-firebase-adminsdk-*.json
+dist/
+*.js.map
 
