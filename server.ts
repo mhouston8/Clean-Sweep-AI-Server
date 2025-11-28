@@ -1,9 +1,8 @@
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import { messaging } from './config/firebase';
+import { messaging, firebaseAdmin } from './config/firebase';
 import supabase from './config/supabase';
-import serviceAccount from './mobile-ai-storage-cleaner-firebase-adminsdk-fbsvc-3dc69c8622.json';
 
 const app = express();
 const PORT: number = parseInt(process.env.PORT || '3000', 10);
@@ -69,11 +68,15 @@ app.get('/', (req: Request, res: Response) => {
 // Test Firebase connection
 app.get('/test/firebase', (req: Request, res: Response) => {
   try {
+    // Get project info from Firebase Admin
+    const app = firebaseAdmin.app();
+    const projectId = app.options.projectId || 
+      (process.env.FIREBASE_SERVICE_ACCOUNT ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT).project_id : 'Not available');
+    
     res.json({ 
       success: true, 
       message: 'Firebase Admin is initialized',
-      projectId: serviceAccount.project_id,
-      clientEmail: serviceAccount.client_email
+      projectId: projectId
     });
   } catch (error: any) {
     res.status(500).json({ 
