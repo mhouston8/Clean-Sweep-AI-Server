@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: ai-cleaner-node-server
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # Add your environment variables in Render dashboard:
+      # - SUPABASE_URL
+      # - SUPABASE_SERVICE_ROLE_KEY
+      # - FIREBASE_SERVICE_ACCOUNT (as JSON string, see README)
+
