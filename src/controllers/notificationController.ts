@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { NotificationRequest, BroadcastNotificationRequest } from '../types';
+import { NotificationRequest, BroadcastNotificationRequest } from '../models';
 import { firebaseService } from '../services/firebaseService';
 import { userService } from '../services/supabaseService';
 import { userDeviceService } from '../services/supabaseService';

@@ -1,5 +1,5 @@
 import supabase from '../config/supabase';
-import { UserDevice, User } from '../types';
+import { UserDevice, User, Subscription } from '../models';
 
 // User Device Service
 export const userDeviceService = {
@@ -157,13 +157,13 @@ export const userService = {
       throw error;
     }
 
-    return (data || []).map((user: User) => user.id);
+    return (data || []).map((user: { id: string }) => user.id);
   }
 };
 
 // Subscription Service
 export const subscriptionService = {
-  async getAll(): Promise<any[]> {
+  async getAll(): Promise<Subscription[]> {
     const { data, error } = await supabase
       .from('Subscriptions')
       .select('*');
@@ -175,7 +175,7 @@ export const subscriptionService = {
     return data || [];
   },
 
-  async getById(id: string): Promise<any> {
+  async getById(id: string): Promise<Subscription> {
     const { data, error } = await supabase
       .from('Subscriptions')
       .select('*')
@@ -189,7 +189,7 @@ export const subscriptionService = {
     return data;
   },
 
-  async getByUserId(userId: string): Promise<any[]> {
+  async getByUserId(userId: string): Promise<Subscription[]> {
     const { data, error } = await supabase
       .from('Subscriptions')
       .select('*')
@@ -202,7 +202,7 @@ export const subscriptionService = {
     return data || [];
   },
 
-  async create(subscriptionData: any): Promise<any> {
+  async create(subscriptionData: Partial<Subscription>): Promise<Subscription> {
     const { data, error } = await supabase
       .from('Subscriptions')
       .insert(subscriptionData)

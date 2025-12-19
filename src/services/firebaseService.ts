@@ -1,5 +1,5 @@
 import { messaging, firebaseAdmin } from '../config/firebase';
-import { NotificationRequest, BroadcastNotificationRequest } from '../types';
+import { NotificationRequest, BroadcastNotificationRequest } from '../models';
 
 export const firebaseService = {
   async sendNotification(request: NotificationRequest): Promise<string> {
