@@ -15,7 +15,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   }
 } else {
   // Read from file (for local development)
-  const serviceAccountPath = path.join(__dirname, '../../config/mobile-ai-storage-cleaner-firebase-adminsdk-fbsvc-3dc69c8622.json');
+  const serviceAccountPath = path.join(__dirname, '../../config/clean-sweep-ai-31cac-firebase-adminsdk-fbsvc-48072db267.json');
   
   if (fs.existsSync(serviceAccountPath)) {
     serviceAccount = require(serviceAccountPath) as admin.ServiceAccount;
