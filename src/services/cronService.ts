@@ -56,13 +56,13 @@ async function sendNotificationToNonSubscribedUsers(): Promise<void> {
  * Initialize and start all cron jobs
  */
 export function startCronJobs(): void {
-  // Schedule: Run every 5 seconds
+  // Schedule: Run every 30 minutes
   // Format: second minute hour day month day-of-week
-  // '*/5 * * * * *' = Every 5 seconds
-  cron.schedule('*/5 * * * * *', async () => {
+  // '0 */30 * * * *' = Every 30 minutes (at :00 and :30)
+  cron.schedule('0 */30 * * * *', async () => {
     await sendNotificationToNonSubscribedUsers();
   });
 
-  console.log('[Cron Jobs] Scheduled: Notification to non-subscribed users every 5 seconds');
+  console.log('[Cron Jobs] Scheduled: Notification to non-subscribed users every 30 minutes');
 }
 
