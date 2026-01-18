@@ -1,5 +1,6 @@
 import { messaging, firebaseAdmin } from '../config/firebase';
 import { NotificationRequest, BroadcastNotificationRequest } from '../models';
+import * as fs from 'fs';
 
 export const firebaseService = {
   async sendNotification(request: NotificationRequest): Promise<string> {
@@ -47,8 +48,42 @@ export const firebaseService = {
   getProjectId(): string | undefined {
     try {
       const app = firebaseAdmin.app();
-      return app.options.projectId || 
-        (process.env.FIREBASE_SERVICE_ACCOUNT ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT).project_id : undefined);
+      
+      // Try app.options.projectId first
+      if (app.options.projectId) {
+        return app.options.projectId;
+      }
+      
+      // Try environment variable
+      if (process.env.FIREBASE_PROJECT_ID) {
+        return process.env.FIREBASE_PROJECT_ID;
+      }
+      
+      // Try reading from service account file if GOOGLE_APPLICATION_CREDENTIALS is set
+      if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+        try {
+          const serviceAccount = JSON.parse(fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'utf8'));
+          if (serviceAccount.project_id) {
+            return serviceAccount.project_id;
+          }
+        } catch (error) {
+          // File read failed, continue to next option
+        }
+      }
+      
+      // Try FIREBASE_SERVICE_ACCOUNT environment variable
+      if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+        try {
+          const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+          if (serviceAccount.project_id) {
+            return serviceAccount.project_id;
+          }
+        } catch (error) {
+          // Parse failed, continue
+        }
+      }
+      
+      return undefined;
     } catch (error) {
       return undefined;
     }
