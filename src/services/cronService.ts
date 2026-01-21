@@ -2,6 +2,8 @@ import * as cron from 'node-cron';
 import { userService } from './supabaseService';
 import { userDeviceService } from './supabaseService';
 import { firebaseService } from './firebaseService';
+import * as https from 'https';
+import * as http from 'http';
 
 /**
  * Send push notifications to all non-subscribed users
@@ -53,6 +55,46 @@ async function sendNotificationToNonSubscribedUsers(): Promise<void> {
 }
 
 /**
+ * Ping health endpoint to keep the service alive (prevent Render from sleeping)
+ */
+async function pingHealthEndpoint(): Promise<void> {
+  try {
+    // Get the service URL from environment variable or construct it
+    const serviceUrl = process.env.RENDER_SERVICE_URL || 
+                       process.env.SERVICE_URL || 
+                       `http://localhost:${process.env.PORT || 3000}`;
+    
+    const healthUrl = `${serviceUrl}/health`;
+    
+    console.log(`[Health Ping] Pinging ${healthUrl}...`);
+    
+    const url = new URL(healthUrl);
+    const client = url.protocol === 'https:' ? https : http;
+    
+    const req = client.get(healthUrl, (res) => {
+      let data = '';
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      res.on('end', () => {
+        console.log(`[Health Ping] Success - Status: ${res.statusCode}`);
+      });
+    });
+    
+    req.on('error', (error) => {
+      console.error('[Health Ping] Error:', error.message);
+    });
+    
+    req.setTimeout(10000, () => {
+      req.destroy();
+      console.error('[Health Ping] Request timeout');
+    });
+  } catch (error: any) {
+    console.error('[Health Ping] Error pinging health endpoint:', error.message);
+  }
+}
+
+/**
  * Initialize and start all cron jobs
  */
 export function startCronJobs(): void {
@@ -63,6 +105,13 @@ export function startCronJobs(): void {
     await sendNotificationToNonSubscribedUsers();
   });
 
+  // Schedule: Ping health endpoint every 10 minutes to keep service alive
+  // This prevents Render free tier from sleeping
+  cron.schedule('*/10 * * * *', async () => {
+    await pingHealthEndpoint();
+  });
+
   console.log('[Cron Jobs] Scheduled: Notification to non-subscribed users every 30 minutes');
+  console.log('[Cron Jobs] Scheduled: Health ping every 10 minutes');
 }
 
