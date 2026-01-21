@@ -11,9 +11,11 @@ if (!admin.apps.length) {
   // Priority 1: FIREBASE_SERVICE_ACCOUNT environment variable (for Render/production)
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     try {
-      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      const serviceAccountData = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      serviceAccount = serviceAccountData as admin.ServiceAccount;
       credential = admin.credential.cert(serviceAccount);
-      projectId = serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID;
+      // Handle both projectId (camelCase) and project_id (snake_case)
+      projectId = (serviceAccountData as any).project_id || serviceAccount.projectId || process.env.FIREBASE_PROJECT_ID;
       console.log('[Firebase] Initialized using FIREBASE_SERVICE_ACCOUNT environment variable');
     } catch (error) {
       console.error('[Firebase] Error parsing FIREBASE_SERVICE_ACCOUNT:', error);
@@ -22,18 +24,22 @@ if (!admin.apps.length) {
   }
   // Priority 2: GOOGLE_APPLICATION_CREDENTIALS file path
   else if (process.env.GOOGLE_APPLICATION_CREDENTIALS && fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
-    serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+    const serviceAccountData = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+    serviceAccount = serviceAccountData as admin.ServiceAccount;
     credential = admin.credential.cert(serviceAccount);
-    projectId = serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID;
+    // Handle both projectId (camelCase) and project_id (snake_case)
+    projectId = (serviceAccountData as any).project_id || serviceAccount.projectId || process.env.FIREBASE_PROJECT_ID;
     console.log('[Firebase] Initialized using service account file from GOOGLE_APPLICATION_CREDENTIALS');
   } 
   // Priority 3: Fallback to local service account file (for local development)
   else {
     const serviceAccountPath = path.join(__dirname, '../../config/clean-sweep-ai-31cac-firebase-adminsdk-fbsvc-48072db267.json');
     if (fs.existsSync(serviceAccountPath)) {
-      serviceAccount = require(serviceAccountPath);
+      const serviceAccountData = require(serviceAccountPath);
+      serviceAccount = serviceAccountData as admin.ServiceAccount;
       credential = admin.credential.cert(serviceAccount);
-      projectId = serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID;
+      // Handle both projectId (camelCase) and project_id (snake_case)
+      projectId = (serviceAccountData as any).project_id || serviceAccount.projectId || process.env.FIREBASE_PROJECT_ID;
       console.log('[Firebase] Initialized using local service account file');
     } else {
       throw new Error(
